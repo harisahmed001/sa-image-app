@@ -1,0 +1,33 @@
+name: "Unit Tests"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  unittests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Docker create network
+      run: docker network create app
+    
+    - name: Redis image
+      run: docker run --name redis -d --net app -p 6379:6379 -h redis redis 
+      
+    - name: Mongo image
+      run: docker run --name mongo -d --net app -p 27017:27017 -h mongo -e MONGO_INITDB_ROOT_USERNAME=test -e MONGO_INITDB_ROOT_PASSWORD=test mongo 
+      
+    - name: Docker build
+      run: docker build -t imageapp . 
+
+    - name: Run unit tests
+      run: docker run --rm --name imageapp --net app -h imageapp -p 5001:5001 -e REDIS_HOST=redis -e REDIS_PORT=6379 -e REDIS_DB=0 -e REDIS_EXPIRE_SECONDS=3600 -e MONGO_HOST=mongo -e MONGO_DB=imageapp -e MONGO_USER=test -e MONGO_PASS=test -e MONGO_POOL="false" -e S3_BUCKET=${{secrets.BUCKET}} -e UPLOAD_FOLDER=uploads -e FLASK_HOST=0.0.0.0 -e FLASK_PORT=5001 imageapp unittest
+      

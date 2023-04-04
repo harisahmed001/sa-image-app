@@ -1,0 +1,18 @@
+version: 0.2
+
+
+phases:
+  pre_build:
+    commands:
+      - $(aws ecr get-login --region us-east-1 --no-include-email)
+      - REPOSITORY_URI=894162685760.dkr.ecr.us-east-1.amazonaws.com/imageapp
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION)
+      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+  build:
+    commands:
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$COMMIT_HASH
+  post_build:
+    commands:
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$COMMIT_HASH

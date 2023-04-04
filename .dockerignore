@@ -1,0 +1,6 @@
+tmp/
+env/
+docker-compose.yml
+uploads/
+Dockerfile/
+__pycache__

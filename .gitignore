@@ -1,0 +1,6 @@
+tmp/
+env/
+__pycache__
+uploads/
+aws_cred
+.env

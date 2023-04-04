@@ -1,0 +1,32 @@
+name: "Build And Push"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build_and_push:
+    name: Build And Push
+    runs-on: ubuntu-latest
+    
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Docker build
+      run: docker build -t 894162685760.dkr.ecr.us-east-1.amazonaws.com/imageapp:latest -t 894162685760.dkr.ecr.us-east-1.amazonaws.com/imageapp:${{ github.sha }} . 
+
+    - name: Aws auth
+      run: aws configure set aws_access_key_id "${{secrets.AWS_ACCESS_KEY_ID}}" && aws configure set aws_secret_access_key "${{secrets.AWS_SECRET_ACCESS_KEY}}" && aws configure set region "us-east-1"
+
+    - name: Docker Login
+      run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 894162685760.dkr.ecr.us-east-1.amazonaws.com
+
+    - name: Docker Push
+      run: |
+        docker push 894162685760.dkr.ecr.us-east-1.amazonaws.com/imageapp:latest 
+        docker push 894162685760.dkr.ecr.us-east-1.amazonaws.com/imageapp:${{ github.sha }}
+      

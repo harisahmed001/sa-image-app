@@ -1,0 +1,43 @@
+version: "3.7" 
+services:
+  imageapp:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: imageapp
+    ports:
+      - '5001:5001'
+    container_name: imageapp
+    hostname: imageapp
+    volumes:
+     - ./:/application/
+     - ./aws_cred:/root/.aws/credentials
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_EXPIRE_SECONDS: 3600
+      MONGO_HOST: mongo
+      MONGO_DB: imageapp
+      MONGO_USER: test
+      MONGO_PASS: test
+      MONGO_POOL: "false"
+      S3_BUCKET: ${S3_BUCKET}
+      UPLOAD_FOLDER: "uploads"
+      FLASK_HOST: "0.0.0.0"
+      FLASK_PORT: 5001
+
+  mongo:
+    image: mongo
+    restart: always
+    container_name: mongo
+    hostname: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: test
+      MONGO_INITDB_ROOT_PASSWORD: test
+
+  redis:
+    image: redis
+    restart: always
+    container_name: redis
+    hostname: redis
